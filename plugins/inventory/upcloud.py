@@ -117,16 +117,93 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             raise AnsibleError("Invalid UpCloud API credentials.")
 
     def _get_servers(self):
-        # TODO
-        return ""
+        self.servers = self.client.get_servers()
 
     def _filter_servers(self):
-        # TODO
-        return ""
+        if self.get_option("zones"):
+            tmp = []
+            for server in self.servers:
+                if server.zone in self.get_option("zones"):
+                    tmp.append(server)
 
-    def _set_server_attributes(self):
-        # TODO
-        return ""
+            self.servers = tmp
+
+        if self.get_option("tags"):
+            tmp = []
+            for server in self.servers:
+                disqualified = False
+                for tag in self.get_option("tags"):
+                    if tag not in server.tags:
+                        disqualified = True
+
+                if not disqualified:
+                    tmp.append(server)
+
+            self.servers = tmp
+
+        if self.get_option("network"):
+            try:
+                self.network = self.client.get_network(self.get_option("network"))
+            except UpCloudAPIError as exp:
+                raise AnsibleError(str(exp))
+
+            tmp = []
+            if getattr(self.network, "servers"):
+                for server in self.servers:
+                    for net_server in self.network.servers["server"]:
+                        if server.uuid == net_server.uuid:
+                            tmp.append(server)
+
+            self.servers = tmp
+
+    def _set_server_attributes(self, server):
+        server_details = self.client.get_server(server.uuid)
+
+        self.inventory.set_variable(server.hostname, "id", to_native(server.uuid))
+        self.inventory.set_variable(server.hostname, "hostname", to_native(server.hostname))
+        self.inventory.set_variable(server.hostname, "status", to_native(server.state))
+        self.inventory.set_variable(server.hostname, "zone", to_native(server.zone))
+        self.inventory.set_variable(server.hostname, "firewall", to_native(server.firewall))
+        self.inventory.set_variable(server.hostname, "plan", to_native(server.plan))
+        self.inventory.set_variable(server.hostname, "tags", list(server.tags))
+
+        ipv4_addrs = []
+        ipv6_addrs = []
+        publ_addrs = []
+        priv_addrs = []
+        for iface in server_details.networking["interfaces"]["interface"]:
+            for addr in iface["ip_addresses"]["ip_address"]:
+                address = addr.get("address")
+
+                if iface.get("family") == "IPv4":
+                    ipv4_addrs.append(address)
+                else:
+                    ipv6_addrs.append(address)
+
+                if iface.get("type") == "public":
+                    publ_addrs.append(address)
+                else:
+                    priv_addrs.append(address)
+
+        connect_with = self.get_option("connect_with")
+        if connect_with == "public_ipv4":
+            possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
+            if len(possible_addresses) == 0:
+                raise AnsibleError(f'No available public IPv4 addresses for server {server.uuid} ({server.hostname})')
+            self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+        elif connect_with == "hostname":
+            self.inventory.set_variable(server.hostname, "ansible_host", to_native(server.hostname))
+        elif connect_with == "private_ipv4":
+            if self.get_option("network"):
+                for iface in server_details.networking["interfaces"]["interface"]:
+                    if iface.network == self.network.uuid:
+                        self.inventory.set_variable(
+                            server.hostname,
+                            "ansible_host",
+                            to_native(iface["ip_addresses"]["ip_address"][0].get("address"))
+                        )
+            else:
+                raise AnsibleError("You can only connect with private IPv4 if you specify a network")
 
     def verify_file(self, path):
         """Return if a file can be used by this plugin"""
@@ -141,17 +218,27 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         if not UC_AVAILABLE:
             raise AnsibleError("UpCloud dynamic inventory plugin requires upcloud-api Python module")
 
-        # TODO
-
         self._read_config_data(path)
         self._initialize_upcloud_client()
         self._test_upcloud_credentials()
-        # self._get_servers()
-        # self._filter_servers()
+        self._get_servers()
+        self._filter_servers()
 
         # Add 'upcloud' as a top group
         self.inventory.add_group(group="upcloud")
 
         for server in self.servers:
-            self.inventory.add_host(server.name, group="upcloud")
-            # TODO
+            self.inventory.add_host(server.hostname, group="upcloud")
+            self._set_server_attributes(server)
+
+            strict = self.get_option('strict')
+
+            # Composed variables
+            self._set_composite_vars(self.get_option('compose'), self.inventory.get_host(server.hostname).get_vars(),
+                                     server.hostname, strict=strict)
+
+            # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
+            self._add_host_to_composed_groups(self.get_option('groups'), {}, server.hostname, strict=strict)
+
+            # Create groups based on variable values and add the corresponding hosts to it
+            self._add_host_to_keyed_groups(self.get_option('keyed_groups'), {}, server.hostname, strict=strict)
