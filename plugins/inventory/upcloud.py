@@ -35,6 +35,15 @@ DOCUMENTATION = r'''
             default: UPCLOUD_PASSWORD
             type: str
             required: false
+        connect_with:
+            description: Connect to the server with the specified choice.
+            default: public_ipv4
+            type: str
+            choices:
+                - public_ipv4
+                - public_ipv6
+                - hostname
+                - private_ipv4
         zones:
           description: Populate inventory with instances in these zones.
           default: []
@@ -54,10 +63,10 @@ DOCUMENTATION = r'''
 
 EXAMPLES = r"""
 # Minimal example. `UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` are available as environment variables.
-plugin: upcloud
+plugin: community.upcloud.upcloud
 
 # Example with locations, types, groups, username and password
-plugin: upcloud
+plugin: community.upcloud.upcloud
 username: foobar
 password: YOUR_SECRET_PASSWORD
 zones:
@@ -67,7 +76,7 @@ tags:
 
 # Group by a zone with prefix e.g. "upcloud_zone_us-nyc1"
 # and status with prefix e.g. "server_status_running"
-plugin: upcloud
+plugin: community.upcloud.upcloud
 keyed_groups:
   - key: zone
     prefix: upcloud_zone
@@ -91,7 +100,7 @@ except ImportError:
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable):
-    name = 'upcloud.upcloud'
+    name = 'upcloud'
 
     def _initialize_upcloud_client(self):
         self.username_env = self.get_option("username_env")
@@ -104,7 +113,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         )
 
         self.client = upcloud_api.CloudManager(self.username, self.password)
-        self.client.api.user_agent = f'ansible-inventory/{__version__}'
+        self.client.api.user_agent = f'upcloud-ansible-inventory/{__version__}'
 
         api_root_env = "UPCLOUD_API_ROOT"
         if os.getenv(api_root_env):
@@ -163,9 +172,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.inventory.set_variable(server.hostname, "hostname", to_native(server.hostname))
         self.inventory.set_variable(server.hostname, "status", to_native(server.state))
         self.inventory.set_variable(server.hostname, "zone", to_native(server.zone))
-        self.inventory.set_variable(server.hostname, "firewall", to_native(server.firewall))
+        self.inventory.set_variable(server.hostname, "firewall", to_native(server_details.firewall))
         self.inventory.set_variable(server.hostname, "plan", to_native(server.plan))
-        self.inventory.set_variable(server.hostname, "tags", list(server.tags))
+        self.inventory.set_variable(server.hostname, "tags", list(server_details.tags))
 
         ipv4_addrs = []
         ipv6_addrs = []
@@ -175,7 +184,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             for addr in iface["ip_addresses"]["ip_address"]:
                 address = addr.get("address")
 
-                if iface.get("family") == "IPv4":
+                if addr.get("family") == "IPv4":
                     ipv4_addrs.append(address)
                 else:
                     ipv6_addrs.append(address)
@@ -190,6 +199,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
             if len(possible_addresses) == 0:
                 raise AnsibleError(f'No available public IPv4 addresses for server {server.uuid} ({server.hostname})')
+            self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+        elif connect_with == "public_ipv6":
+            possible_addresses = list(set(ipv6_addrs) & set(publ_addrs))
+            if len(possible_addresses) == 0:
+                raise AnsibleError(f'No available public IPv6 addresses for server {server.uuid} ({server.hostname})')
             self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
         elif connect_with == "hostname":
             self.inventory.set_variable(server.hostname, "ansible_host", to_native(server.hostname))

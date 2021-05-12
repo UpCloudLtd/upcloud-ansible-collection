@@ -1,6 +1,6 @@
-namespace: upcloud
+namespace: community
 name: upcloud
-version: 1.0.0
+version: 0.1.0
 readme: README.md
 authors:
   - UpCloud developers (github.com/UpCloudLtd)
@@ -11,8 +11,6 @@ tags:
   - upcloud
   - cloud
 
-dependencies:
-  upcloud-api: '>=2.0.0'
 repository: https://github.com/UpCloudLtd/upcloud-ansible-collection
 documentation: TODO
 homepage: https://github.com/UpCloudLtd/upcloud-ansible-collection
