@@ -34,3 +34,6 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --docker -v --color
+
+      - name: Test building a release
+        run: ansible-galaxy collection build
