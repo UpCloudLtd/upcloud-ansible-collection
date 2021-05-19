@@ -1,5 +1,9 @@
 # Ansible UpCloud Collection
 
+
+[![sanity](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml)
+[![unit](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml)
+
 UpCloud inventory as a modernized Ansible collection. Current scope only covers UpCloud's servers offering,
 but depending on the demand we might include our other services (networks, (object) storages, routers, databases etc)
 in it as well. Same goes for plugins for other API actions. We recommend using
@@ -18,7 +22,7 @@ itself can be installed with the `ansible-galaxy` command that comes in the Ansi
 
 ```bash
 pip3 install upcloud-api
-ansible-galaxy collection install https://github.com/path/to/release.tar.gz
+ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/download/v0.5.0/community-upcloud-0.5.0.tar.gz
 ```
 
 ## Inventory usage
@@ -38,7 +42,8 @@ enable_plugins = community.upcloud.upcloud
 
 Inventory file must be named so that it ends either in `upcloud.yml` or `upcloud.yaml`. If you want to include
 all your servers in the inventory, inventory file can just have `plugin: community.upcloud.upcloud` as its content.
-It is also possible to filter servers based on their zone, tags, state, or the network they belong to:
+It is also possible to filter servers based on their zone, tags, state, or the network they belong to.
+Following example has all the possibilities, but you can choose what to filter on:
 
 ```
 plugin: community.upcloud.upcloud
@@ -72,6 +77,10 @@ username: YOUR_USERNAME
 password: YOUR_PASSWORD
 ```
 
+## Changelog
+
+Changelog is available [in its own file](CHANGELOG.md).
+
 ## Development
 
 This collection follows [Ansible Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/index.html), with
@@ -84,10 +93,9 @@ Tests can be run with `ansible-test` tool (comes with Ansible) in the collection
 
 ```bash
 $ cd ~/.ansible/collections/ansible_collections/community/upcloud
-$ pip install --user -r requirements-dev.txt
-$ ansible-test sanity
+$ ansible-test sanity --docker -v --color
 ...
-$ ansible-test units -v --color --coverage
+$ ansible-test units -v --color --docker --coverage
 ...
 ```
 
