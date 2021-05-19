@@ -1,7 +1,7 @@
 __metaclass__ = type
 
 DOCUMENTATION = r'''
-    name: hcloud
+    name: upcloud
     plugin_type: inventory
     author:
       - Antti Myyrä (@ajmyyra)
@@ -54,8 +54,8 @@ DOCUMENTATION = r'''
           default: []
           type: list
           required: false
-        state:
-          description: Populate inventory with instances with this state.
+        states:
+          description: Populate inventory with instances with these states.
           default: []
           type: list
           required: false
@@ -72,8 +72,8 @@ plugin: community.upcloud.upcloud
 
 # Example with locations, types, groups, username and password
 plugin: community.upcloud.upcloud
-username: foobar
-password: YOUR_SECRET_PASSWORD
+username: YOUR_USERNAME
+password: YOUR_PASSWORD
 zones:
   - nl-ams1
 tags:
@@ -130,8 +130,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         except UpCloudAPIError:
             raise AnsibleError("Invalid UpCloud API credentials.")
 
+    def _fetch_servers(self):
+        return self.client.get_servers()
+
+    def _fetch_server_details(self, uuid):
+        return self.client.get_server(uuid)
+
+    def _fetch_network_details(self, uuid):
+        return self.client.get_network(uuid)
+
     def _get_servers(self):
-        self.servers = self.client.get_servers()
+        self.servers = self._fetch_servers()
 
     def _filter_servers(self):
         if self.get_option("zones"):
@@ -142,10 +151,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             self.servers = tmp
 
-        if self.get_option("state"):
+        if self.get_option("states"):
             tmp = []
             for server in self.servers:
-                if server.state in self.get_option("state"):
+                if server.state in self.get_option("states"):
                     tmp.append(server)
 
             self.servers = tmp
@@ -165,7 +174,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         if self.get_option("network"):
             try:
-                self.network = self.client.get_network(self.get_option("network"))
+                self.network = self._fetch_network_details(self.get_option("network"))
             except UpCloudAPIError as exp:
                 raise AnsibleError(str(exp))
 
@@ -179,7 +188,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             self.servers = tmp
 
     def _set_server_attributes(self, server):
-        server_details = self.client.get_server(server.uuid)
+        server_details = self._fetch_server_details(server.uuid)
 
         self.inventory.set_variable(server.hostname, "id", to_native(server.uuid))
         self.inventory.set_variable(server.hostname, "hostname", to_native(server.hostname))
@@ -243,13 +252,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             path.endswith(("upcloud.yaml", "upcloud.yml"))
         )
 
-    def parse(self, inventory, loader, path, cache=True):
-        super(InventoryModule, self).parse(inventory, loader, path, cache)
-
-        if not UC_AVAILABLE:
-            raise AnsibleError("UpCloud dynamic inventory plugin requires upcloud-api Python module")
-
-        self._read_config_data(path)
+    def _populate(self):
         self._initialize_upcloud_client()
         self._test_upcloud_credentials()
         self._get_servers()
@@ -273,3 +276,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), {}, server.hostname, strict=strict)
+
+    def parse(self, inventory, loader, path, cache=True):
+        super(InventoryModule, self).parse(inventory, loader, path, cache)
+
+        if not UC_AVAILABLE:
+            raise AnsibleError("UpCloud dynamic inventory plugin requires upcloud-api Python module")
+
+        self._read_config_data(path)
+
+        self._populate()

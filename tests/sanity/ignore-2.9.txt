@@ -1,1 +1,2 @@
 plugins/inventory/upcloud.py future-import-boilerplate
+tests/unit/plugins/inventory/test_upcloud.py future-import-boilerplate
