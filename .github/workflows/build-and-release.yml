@@ -1,0 +1,39 @@
+name: Build and release new version
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  NAMESPACE: community
+  COLLECTION_NAME: upcloud
+  ANSIBLE_VERSION: stable-2.11
+
+jobs:
+
+  units:
+    runs-on: ubuntu-latest
+    name: Build and release
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install ansible-base (${{env.ANSIBLE_VERSION}})
+        run: pip install https://github.com/ansible/ansible/archive/${{env.ANSIBLE_VERSION}}.tar.gz --disable-pip-version-check
+
+      - name: Build project release
+        run: mkdir release && ansible-galaxy collection build --output-path release/
+
+      - name: Create new release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          artifacts: "release/${{env.NAMESPACE}}-${{env.COLLECTION_NAME}}*.tar.gz"

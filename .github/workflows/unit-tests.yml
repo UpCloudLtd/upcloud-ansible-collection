@@ -1,0 +1,53 @@
+name: unit
+on:
+  - push
+  - pull_request
+
+env:
+  NAMESPACE: community
+  COLLECTION_NAME: upcloud
+
+jobs:
+
+  units:
+    runs-on: ubuntu-latest
+    name: Unit tests (${{ matrix.ansible }})
+    strategy:
+      fail-fast: true
+      matrix:
+        ansible:
+          - stable-2.9
+          - stable-2.10
+          - stable-2.11
+          - devel
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/${{env.NAMESPACE}}/${{env.COLLECTION_NAME}}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          # it is just required to run that once as "ansible-test units" in the docker image
+          # will run on all python versions it supports.
+          python-version: 3.8
+
+      - name: Install ansible-base (${{ matrix.ansible }})
+        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
+
+      # Run the unit tests
+      - name: Run unit test
+        run: ansible-test units -v --color --docker --coverage
+        working-directory: ./ansible_collections/${{env.NAMESPACE}}/${{env.COLLECTION_NAME}}
+
+      # ansible-test support producing code coverage date
+      - name: Generate coverage report
+        run: ansible-test coverage xml -v --requirements --group-by command --group-by version
+        working-directory: ansible_collections/${{env.NAMESPACE}}/${{env.COLLECTION_NAME}}
+
+      # See the reports at https://codecov.io/gh/GITHUBORG/REPONAME
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false
