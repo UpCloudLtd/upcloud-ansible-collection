@@ -63,7 +63,7 @@ You should see a list of hosts.
 
 You can filter based on multiple data points:
 
-```
+```yaml
 plugin: community.upcloud.upcloud
 zones:
   - fi-hel2
@@ -77,7 +77,7 @@ network: 035a0a8a-7704-4da5-820d-129fc8232714
 
 Servers can also be grouped by status, zone etc by specifying them as `keyed_groups`.
 
-```
+```yaml
 plugin: community.upcloud.upcloud
 keyed_groups:
   - key: zone
@@ -89,7 +89,7 @@ keyed_groups:
 Examples here assume that API credentials are available as environment variables
 (`UPCLOUD_USERNAME` & `UPCLOUD_PASSWORD`). They can also be defined in inventory file:
 
-```
+```yaml
 plugin: community.upcloud.upcloud
 username: YOUR_USERNAME
 password: YOUR_PASSWORD
