@@ -33,10 +33,35 @@ ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-
 
 ### Inventory usage
 
-Inventory file must be named so that it ends either in `upcloud.yml` or `upcloud.yaml`. If you want to include
-all your servers in the inventory, inventory file can just have `plugin: community.upcloud.upcloud` as its content.
-It is also possible to filter servers based on their zone, tags, state, or the network they belong to.
-Following example has all the possibilities, but you can choose what to filter on:
+Inventory file must be named so that it ends either in `upcloud.yml` or `upcloud.yaml`. It is also possible to filter
+servers based on their zone, tags, state, or the network they belong to.
+
+#### Quick Start
+
+Create an `upcloud.yml` file with these contents:
+
+```yaml
+plugin: community.upcloud.upcloud
+```
+
+Set environment variables for API authentication:
+
+```bash
+export UPCLOUD_USERNAME="upcloud-api-access-enabled-user"
+export UPCLOUD_PASSWORD="verysecretpassword"
+```
+
+And show the Ansible inventory information as a graph:
+
+```bash
+ansible-inventory -i upcloud.yml --graph
+```
+
+You should see a list of hosts.
+
+#### Further examples
+
+You can filter based on multiple data points:
 
 ```
 plugin: community.upcloud.upcloud
@@ -73,8 +98,8 @@ password: YOUR_PASSWORD
 ## Troubleshooting
 
 If you are having problems loading, finding or enabling the collection, you might need to create or modify your
-existing `ansible.cfg`config. Adding the following settings should ensure that the collection can be found
-and is enabled:
+existing `ansible.cfg`config. Adding the following settings should ensure that the collection can be found and is
+enabled:
 
 ```
 [default]
