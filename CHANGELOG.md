@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.5.1] - 2021-10-19
+
 ### Changed
 - Fixed `Invalid value "community.upcloud.upcloud"` when simply trying to use the plugin
-
----
 
 ## [0.5.0] - 2021-05-19
 
@@ -21,4 +23,5 @@ First release for the new UpCloud Ansible Collection! :tada:
 - Ansible inventory for UpCloud servers, allowing filtering with zones, tags, networks or server states.
 
 [Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.5.0...HEAD
+[0.5.1]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/tag/v0.5.0
