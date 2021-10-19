@@ -16,9 +16,9 @@ DOCUMENTATION = r'''
         - constructed
     options:
         plugin:
-            description: marks this as an instance of the "upcloud" plugin
+            description: The name of the UpCloud Ansible inventory plugin
             required: true
-            choices: ["upcloud"]
+            choices: ["community.upcloud.upcloud"]
         username:
             description: UpCloud API username.
             required: false
