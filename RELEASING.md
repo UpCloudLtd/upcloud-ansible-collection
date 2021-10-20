@@ -8,9 +8,9 @@
     1. Leave "Unreleased" section at the top empty
 1. Update `galaxy.yml` with the new version
 1. Update README.md's download link with the new version
-1. [Create a draft release in GitHub](https://github.com/UpCloudLtd/upcloud-ansible-collection/releases) with the new version
-as the tag like `v2.3.5`
-1. Build the collection .tar.gz using `ansible-galaxy collection build`
-1. Attach the built .tar.gz into the release
 1. Merge your release branch to the stable branch
-1. Publish the release
+1. Create and push a new tag e.g `v2.3.5`
+1. GitHub actions will trigger on tag and do a build & release of the tagged version
+1. Check [the release page](https://github.com/UpCloudLtd/upcloud-ansible-collection/releases) for the release
+1. Add correct changelog to the release if it's missing
+1. Done!
