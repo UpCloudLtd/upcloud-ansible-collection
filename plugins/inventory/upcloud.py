@@ -219,19 +219,15 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         connect_with = self.get_option("connect_with")
         if connect_with == "public_ipv4":
             possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
-            if len(possible_addresses) == 0:
-                # Fallback to private_ipv4 if not any public address was found
-                connect_with = "private_ipv4"
-            else:
+            if len(possible_addresses) > 0:
                 self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+            else:
+                connect_with = "private_ipv4" # Fallback to private_ipv4 if not any public address was found
 
         if connect_with == "public_ipv6":
             possible_addresses = list(set(ipv6_addrs) & set(publ_addrs))
-            if len(possible_addresses) == 0:
-                raise AnsibleError(
-                    "No available public IPv6 addresses for server {0} ({1})".format(server.uuid, server.hostname)
-                )
-            self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+            if len(possible_addresses) > 0:
+                self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
         elif connect_with == "hostname":
             self.inventory.set_variable(server.hostname, "ansible_host", to_native(server.hostname))
         elif connect_with == "private_ipv4":
@@ -243,8 +239,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                             "ansible_host",
                             to_native(iface["ip_addresses"]["ip_address"][0].get("address"))
                         )
-            else:
-                raise AnsibleError("You can only connect with private IPv4 if you specify a network")
 
     def verify_file(self, path):
         """Return if a file can be used by this plugin"""
