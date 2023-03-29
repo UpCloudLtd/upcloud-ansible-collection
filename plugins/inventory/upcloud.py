@@ -16,9 +16,9 @@ DOCUMENTATION = r'''
         - constructed
     options:
         plugin:
-            description: marks this as an instance of the "upcloud" plugin
+            description: The name of the UpCloud Ansible inventory plugin
             required: true
-            choices: ["upcloud"]
+            choices: ["community.upcloud.upcloud"]
         username:
             description: UpCloud API username.
             required: false
@@ -220,11 +220,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         if connect_with == "public_ipv4":
             possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
             if len(possible_addresses) == 0:
-                raise AnsibleError(
-                    "No available public IPv4 addresses for server {0} ({1})".format(server.uuid, server.hostname)
-                )
-            self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
-        elif connect_with == "public_ipv6":
+            # Fallback to private_ipv4 if not any public address was found
+                connect_with = "private_ipv4"
+            else:
+                self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+
+        if connect_with == "public_ipv6":
             possible_addresses = list(set(ipv6_addrs) & set(publ_addrs))
             if len(possible_addresses) == 0:
                 raise AnsibleError(
