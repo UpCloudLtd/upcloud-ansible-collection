@@ -230,15 +230,33 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
         elif connect_with == "hostname":
             self.inventory.set_variable(server.hostname, "ansible_host", to_native(server.hostname))
+        connect_with = self.get_option("connect_with")
+        if connect_with == "public_ipv4":
+            possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
+            if len(possible_addresses) > 0:
+                self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+            else:
+                connect_with = "private_ipv4" # Fallback to private_ipv4 if not any public address was found
+
+        if connect_with == "public_ipv6":
+            possible_addresses = list(set(ipv6_addrs) & set(publ_addrs))
+            if len(possible_addresses) > 0:
+                self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
+        elif connect_with == "hostname":
+            self.inventory.set_variable(server.hostname, "ansible_host", to_native(server.hostname))
         elif connect_with == "private_ipv4":
-            if self.get_option("network"):
-                for iface in server_details.networking["interfaces"]["interface"]:
-                    if iface.network == self.network.uuid:
-                        self.inventory.set_variable(
-                            server.hostname,
-                            "ansible_host",
-                            to_native(iface["ip_addresses"]["ip_address"][0].get("address"))
-                        )
+            for iface in server_details.networking["interfaces"]["interface"]:
+                if self.get_option("network"):
+                    if iface.network != self.network.uuid:
+                         continue
+                else:
+                    if iface.get("type") != "private":
+                         continue
+                self.inventory.set_variable(
+                    server.hostname,
+                    "ansible_host",
+                    to_native(iface["ip_addresses"]["ip_address"][0].get("address"))
+                )
 
     def verify_file(self, path):
         """Return if a file can be used by this plugin"""
