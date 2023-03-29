@@ -257,6 +257,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                     "ansible_host",
                     to_native(iface["ip_addresses"]["ip_address"][0].get("address"))
                 )
+                break
 
     def verify_file(self, path):
         """Return if a file can be used by this plugin"""
