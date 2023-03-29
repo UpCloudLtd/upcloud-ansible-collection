@@ -220,7 +220,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         if connect_with == "public_ipv4":
             possible_addresses = list(set(ipv4_addrs) & set(publ_addrs))
             if len(possible_addresses) == 0:
-            # Fallback to private_ipv4 if not any public address was found
+                # Fallback to private_ipv4 if not any public address was found
                 connect_with = "private_ipv4"
             else:
                 self.inventory.set_variable(server.hostname, "ansible_host", to_native(possible_addresses[0]))
