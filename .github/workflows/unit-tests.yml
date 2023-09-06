@@ -1,25 +1,26 @@
 name: unit
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
 
 env:
   NAMESPACE: community
   COLLECTION_NAME: upcloud
 
 jobs:
-
   units:
     runs-on: ubuntu-latest
-    name: Unit tests (${{ matrix.ansible }})
+    name: Unit tests (${{ matrix.version.ansible }})
     strategy:
       fail-fast: true
       matrix:
-        ansible:
-          - stable-2.9
-          - stable-2.10
-          - stable-2.11
-          - devel
+        version:
+          - { ansible: stable-2.13, python: "3.10" }
+          - { ansible: stable-2.14, python: "3.11" }
+          - { ansible: stable-2.15, python: "3.11" }
+          - { ansible: devel, python: "3.11" }
 
     steps:
       - name: Check out code
@@ -32,10 +33,10 @@ jobs:
         with:
           # it is just required to run that once as "ansible-test units" in the docker image
           # will run on all python versions it supports.
-          python-version: 3.8
+          python-version: ${{ matrix.version.python }}
 
-      - name: Install ansible-base (${{ matrix.ansible }})
-        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
+      - name: Install ansible-base (${{ matrix.version.ansible }})
+        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.version.ansible }}.tar.gz --disable-pip-version-check
 
       # Run the unit tests
       - name: Run unit test
