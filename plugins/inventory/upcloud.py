@@ -97,7 +97,6 @@ from ansible.release import __version__
 
 try:
     import upcloud_api
-    from upcloud_api import Server
     from upcloud_api.errors import UpCloudAPIError
     UC_AVAILABLE = True
 except ImportError:

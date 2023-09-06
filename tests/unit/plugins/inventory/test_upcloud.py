@@ -2,7 +2,6 @@ __metaclass__ = type
 
 import pytest
 
-from ansible.errors import AnsibleParserError
 from ansible.inventory.data import InventoryData
 from .....plugins.inventory.upcloud import InventoryModule
 
