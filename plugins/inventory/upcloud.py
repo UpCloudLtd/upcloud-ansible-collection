@@ -2,7 +2,6 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
     name: upcloud
-    plugin_type: inventory
     author:
       - Antti Myyrä (@ajmyyra)
     short_description: Ansible dynamic inventory plugin for UpCloud.
@@ -48,16 +47,19 @@ DOCUMENTATION = r'''
           description: Populate inventory with instances in these zones.
           default: []
           type: list
+          elements: str
           required: false
         tags:
           description: Populate inventory with instances with these tags.
           default: []
           type: list
+          elements: str
           required: false
         states:
           description: Populate inventory with instances with these states.
           default: []
           type: list
+          elements: str
           required: false
         network:
           description: Populate inventory with instances which are attached to this network name or UUID.

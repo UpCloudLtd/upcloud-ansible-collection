@@ -75,3 +75,6 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# ansible-test
+tests/output/
