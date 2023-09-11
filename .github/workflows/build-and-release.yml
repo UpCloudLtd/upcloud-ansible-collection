@@ -2,15 +2,14 @@ name: Build and release new version
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 env:
   NAMESPACE: community
   COLLECTION_NAME: upcloud
-  ANSIBLE_VERSION: stable-2.11
+  ANSIBLE_VERSION: stable-2.15
 
 jobs:
-
   units:
     runs-on: ubuntu-latest
     name: Build and release
@@ -22,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.11
 
       - name: Install ansible-base (${{env.ANSIBLE_VERSION}})
         run: pip install https://github.com/ansible/ansible/archive/${{env.ANSIBLE_VERSION}}.tar.gz --disable-pip-version-check

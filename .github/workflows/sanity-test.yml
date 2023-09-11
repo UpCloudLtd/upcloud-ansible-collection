@@ -1,24 +1,25 @@
 name: sanity
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
 env:
   NAMESPACE: community
   COLLECTION_NAME: upcloud
 
 jobs:
   sanity:
-    name: Sanity test (${{ matrix.ansible }})
+    name: Sanity test (${{ matrix.version.ansible }})
     strategy:
       matrix:
-        ansible:
-        - stable-2.9
-        - stable-2.10
-        - stable-2.11
-        - devel
+        version:
+          - { ansible: stable-2.13, python: "3.10" }
+          - { ansible: stable-2.14, python: "3.11" }
+          - { ansible: stable-2.15, python: "3.11" }
+          - { ansible: devel, python: "3.11" }
     runs-on: ubuntu-latest
     steps:
-
       - name: Check out code
         uses: actions/checkout@v1
         with:
@@ -27,10 +28,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.version.python }}
 
-      - name: Install ansible-base (${{ matrix.ansible }})
-        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
+      - name: Install ansible-base (${{ matrix.version.ansible }})
+        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.version.ansible }}.tar.gz --disable-pip-version-check
 
       - name: Run sanity tests
         run: ansible-test sanity --docker -v --color
