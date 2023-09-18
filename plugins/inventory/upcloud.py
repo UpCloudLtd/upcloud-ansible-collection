@@ -6,8 +6,8 @@ DOCUMENTATION = r'''
       - Antti Myyrä (@ajmyyra)
     short_description: Ansible dynamic inventory plugin for UpCloud.
     requirements:
-        - python >= 3.4
-        - upcloud-api >= 2.0.0
+        - python >= 3.7
+        - upcloud-api >= 2.5.0
     description:
         - Reads inventories from UpCloud API.
         - Uses a YAML configuration file that ends with upcloud.(yml|yaml).
@@ -55,6 +55,12 @@ DOCUMENTATION = r'''
           type: list
           elements: str
           required: false
+        labels:
+          description: Populate inventory with instances having these labels
+          default: []
+          type: list
+          elements: str
+          required: false
         states:
           description: Populate inventory with instances with these states.
           default: []
@@ -78,8 +84,9 @@ username: YOUR_USERNAME
 password: YOUR_PASSWORD
 zones:
   - nl-ams1
-tags:
-  - database
+labels:
+  - role=prod
+  - foo
 
 # Group by a zone with prefix e.g. "upcloud_zone_us-nyc1"
 # and state with prefix e.g. "server_state_running"
@@ -92,10 +99,14 @@ keyed_groups:
 """
 
 import os
+from typing import List
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible.release import __version__
+from ansible.utils.display import Display
+
+display = Display()
 
 try:
     import upcloud_api
@@ -145,6 +156,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _filter_servers(self):
         if self.get_option("zones"):
+            display.vv("Choosing servers by zone")
             tmp = []
             for server in self.servers:
                 if server.zone in self.get_option("zones"):
@@ -153,6 +165,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             self.servers = tmp
 
         if self.get_option("states"):
+            display.vv("Choosing servers by server state")
             tmp = []
             for server in self.servers:
                 if server.state in self.get_option("states"):
@@ -161,6 +174,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             self.servers = tmp
 
         if self.get_option("tags"):
+            display.vv("Choosing servers by tags")
             tmp = []
             for server in self.servers:
                 disqualified = False
@@ -173,7 +187,25 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             self.servers = tmp
 
+        if self.get_option("labels"):
+            display.vv("Choosing servers by labels")
+            tmp = []
+            for server in self.servers:
+                disqualified = False
+                for wanted_label in self.get_option("labels"):
+                    server_labels = _parse_server_labels(server.labels['label'])
+                    for server_label in server_labels:
+                        display.vvvv(f"Comparing {wanted_label} against {server_label}")
+                        if wanted_label not in server_label:
+                            disqualified = True
+
+                if not disqualified:
+                    tmp.append(server)
+
+            self.servers = tmp
+
         if self.get_option("network"):
+            display.vv("Choosing servers by network")
             try:
                 self.network = self._fetch_network_details(self.get_option("network"))
             except UpCloudAPIError as exp:
@@ -198,6 +230,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.inventory.set_variable(server.hostname, "firewall", to_native(server_details.firewall))
         self.inventory.set_variable(server.hostname, "plan", to_native(server.plan))
         self.inventory.set_variable(server.hostname, "tags", list(server_details.tags))
+        self.inventory.set_variable(server.hostname, "metadata", to_native(server_details.metadata))
+        self.inventory.set_variable(server.hostname, "labels", list(_parse_server_labels(server.labels["label"])))
 
         ipv4_addrs = []
         ipv6_addrs = []
@@ -287,3 +321,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self._read_config_data(path)
 
         self._populate()
+
+
+def _parse_server_labels(labels: List):
+    processed = []
+
+    for label in labels:
+        processed.append(f"{label['key']}={label['value']}")
+
+    return processed

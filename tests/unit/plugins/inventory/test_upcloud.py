@@ -16,6 +16,7 @@ class Server:
         'core_number',
         'firewall',
         'hostname',
+        'metadata',
         'memory_amount',
         'nic_model',
         'title',
@@ -63,6 +64,9 @@ def get_servers():
             'core_number': '2',
             'created': 1599136169,
             'hostname': 'server1',
+            'labels': {
+                'label': []
+            },
             'license': 0,
             'memory_amount': '4096',
             'plan': '2xCPU-4GB',
@@ -79,6 +83,14 @@ def get_servers():
             'core_number': '1',
             'created': 1598526425,
             'hostname': 'server2',
+            'labels': {
+                'label': [
+                    {
+                        'key': 'foo',
+                        'value': 'bar'
+                    }
+                ]
+            },
             'license': 0,
             'memory_amount': '2048',
             'plan': '1xCPU-2GB',
@@ -88,6 +100,25 @@ def get_servers():
             'state': 'stopped',
             'title': 'Server #2',
             'uuid': '004d5201-e2ff-4325-7ac6-a274f1c517b7',
+            'zone': 'nl-ams1',
+            'tags': []
+        },
+        {
+            'core_number': '1',
+            'created': 1598526319,
+            'hostname': 'server3',
+            'labels': {
+                'label': []
+            },
+            'license': 0,
+            'memory_amount': '2048',
+            'plan': '1xCPU-2GB',
+            'plan_ipv4_bytes': '0',
+            'plan_ipv6_bytes': '0',
+            'simple_backup': 'no',
+            'state': 'started',
+            'title': 'Server #3',
+            'uuid': '0003295f-343a-44a2-8080-fb8196a6802a',
             'zone': 'nl-ams1',
             'tags': []
         }
@@ -163,6 +194,14 @@ def get_server2_details():
         'created': 1598526425,
         'firewall': 'on',
         'hostname': 'server2',
+        'labels': {
+            'label': [
+                {
+                    'key': 'foo',
+                    'value': 'bar'
+                }
+            ]
+        },
         'license': 0,
         'memory_amount': '2048',
         'metadata': 'no',
@@ -207,6 +246,57 @@ def get_server2_details():
     })
 
 
+def get_server3_details():
+    return Server(**{
+        'boot_order': 'disk',
+        'core_number': '1',
+        'created': 1598526319,
+        'firewall': 'on',
+        'hostname': 'server3',
+        'license': 0,
+        'memory_amount': '2048',
+        'metadata': 'yes',
+        'networking': {
+            'interfaces': {
+                'interface': [
+                    {
+                        'bootable': 'no',
+                        'index': 1,
+                        'ip_addresses': {
+                            'ip_address': [
+                                {
+                                    'address': '172.16.0.3',
+                                    'family': 'IPv4',
+                                    'floating': 'no'
+                                }
+                            ]
+                        },
+                        'mac': '3b:a6:ba:4a:4b:10',
+                        'network': '035146a5-7a85-408b-b1f8-21925164a7d3',
+                        'source_ip_filtering': 'yes',
+                        'type': 'private'
+                    }
+                ]
+            }
+        },
+        'nic_model': 'virtio',
+        'plan': '1xCPU-2GB',
+        'plan_ipv4_bytes': '0',
+        'plan_ipv6_bytes': '0',
+        'remote_access_enabled': 'no',
+        'remote_access_password': 'fooBar',
+        'remote_access_type': 'vnc',
+        'simple_backup': 'no',
+        'state': 'started',
+        'timezone': 'UTC',
+        'title': 'Server #3',
+        'uuid': '0003295f-343a-44a2-8080-fb8196a6802a',
+        'video_model': 'vga',
+        'zone': 'nl-ams1',
+        'tags': [],
+    })
+
+
 def _mock_initialize_client():
     return
 
@@ -225,7 +315,9 @@ def get_option(option):
 
 def test_populate_hostvars(inventory, mocker):
     inventory._fetch_servers = mocker.MagicMock(side_effect=get_servers)
-    inventory._fetch_server_details = mocker.MagicMock(side_effects=[get_server1_details, get_server2_details])
+    inventory._fetch_server_details = mocker.MagicMock(
+        side_effects=[get_server1_details, get_server2_details, get_server3_details]
+    )
     inventory.get_option = mocker.MagicMock(side_effect=get_option)
 
     inventory._initialize_upcloud_client = _mock_initialize_client
@@ -235,7 +327,12 @@ def test_populate_hostvars(inventory, mocker):
 
     host1 = inventory.inventory.get_host('server1')
     host2 = inventory.inventory.get_host('server2')
+    host3 = inventory.inventory.get_host('server3')
 
     assert host1.vars['id'] == "00229adf-0e46-49b5-a8f7-cbd638d11f6a"
     assert host1.vars['state'] == "started"
     assert host2.vars['plan'] == "1xCPU-2GB"
+    assert len(host2.vars['labels']) == 1
+    assert host2.vars['labels'][0] == "foo=bar"
+    assert host3.vars['id'] == "0003295f-343a-44a2-8080-fb8196a6802a"
+    assert len(host3.vars['labels']) == 0
