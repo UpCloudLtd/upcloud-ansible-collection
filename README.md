@@ -22,7 +22,7 @@ UpCloud Collection requires [UpCloud API's Python bindings](https://pypi.org/pro
 newer in order to work. It can be installed from the Python Package Index with the `pip` tool:
 
 ```bash
-pip3 install upcloud-api>=2.0.0
+pip3 install upcloud-api>=2.5.0
 ```
 
 The collection itself can be installed with the `ansible-galaxy` command that comes with the Ansible package:
@@ -67,12 +67,14 @@ You can filter based on multiple data points:
 plugin: community.upcloud.upcloud
 zones:
   - fi-hel2
-tags:
-  - app
-  - db
+labels:
+  - role=prod
+  - foo
 states:
   - started
+connect_with: private_ipv4
 network: 035a0a8a-7704-4da5-820d-129fc8232714
+server_group: Group name or UUID
 ```
 
 Servers can also be grouped by status, zone etc by specifying them as `keyed_groups`.
