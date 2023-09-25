@@ -218,7 +218,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 for wanted_label in self.get_option("labels"):
                     server_labels = _parse_server_labels(server.labels['label'])
                     for server_label in server_labels:
-                        display.vvvv(f"Comparing {wanted_label} against {server_label}")
+                        display.vvvv(f"Comparing wanted label {wanted_label} against labels {server_label} of server {server.hostname}")
                         if wanted_label in server_label:
                             tmp.append(server)
 
