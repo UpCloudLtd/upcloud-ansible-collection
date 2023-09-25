@@ -62,7 +62,7 @@ DOCUMENTATION = r'''
             elements: str
             required: false
         labels:
-            description: Populate inventory with instances having all these labels
+            description: Populate inventory with instances with any of these labels, either just key or value ("foo" or "bar") or as a whole tag ("foo=bar")
             default: []
             type: list
             elements: str
@@ -215,19 +215,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             display.vv("Choosing servers by labels")
             tmp = []
             for server in self.servers:
-                disqualified = False
                 for wanted_label in self.get_option("labels"):
                     server_labels = _parse_server_labels(server.labels['label'])
-                    if len(server_labels) == 0:
-                        disqualified = True
-
                     for server_label in server_labels:
                         display.vvvv(f"Comparing {wanted_label} against {server_label}")
-                        if wanted_label not in server_label:
-                            disqualified = True
-
-                if not disqualified:
-                    tmp.append(server)
+                        if wanted_label in server_label:
+                            tmp.append(server)
 
             self.servers = tmp
 
