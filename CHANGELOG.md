@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - 2023-09-25
+
+### Added
+
+- Inventory support for filtering with server labels and server groups
+
+### Changed
+
+- Servers that are not reachable with matching `connect_with` option are skipped, instead of returning an error.
+
 ## [0.5.1] - 2021-10-19
 
 ### Changed
@@ -22,6 +32,7 @@ First release for the new UpCloud Ansible Collection! :tada:
 
 - Ansible inventory for UpCloud servers, allowing filtering with zones, tags, networks or server states.
 
-[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.5.0...HEAD
-[0.5.1]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.5.0...v0.5.1
+[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/tag/v0.6.0
+[0.5.1]: https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/tag/v0.5.1
 [0.5.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/tag/v0.5.0

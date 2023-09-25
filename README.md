@@ -1,8 +1,8 @@
 # Ansible UpCloud Collection
 
 
-[![sanity](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml)
-[![unit](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml)
+[![Ansible sanity tests](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml)
+[![unit tests](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml)
 
 UpCloud inventory as a modernized Ansible collection. Current scope only covers UpCloud's servers offering,
 but depending on the demand we might include our other services (networks, (object) storages, routers, databases etc)
@@ -18,7 +18,7 @@ sections below for development quickstart if you're interested in adding new fea
 
 ### Prerequisites
 
-UpCloud Collection requires [UpCloud API's Python bindings](https://pypi.org/project/upcloud-api/) version 2.0.0 or
+UpCloud Collection requires [UpCloud API's Python bindings](https://pypi.org/project/upcloud-api/) version 2.5.0 or
 newer in order to work. It can be installed from the Python Package Index with the `pip` tool:
 
 ```bash
@@ -28,7 +28,7 @@ pip3 install upcloud-api>=2.5.0
 The collection itself can be installed with the `ansible-galaxy` command that comes with the Ansible package:
 
 ```bash
-ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/download/v0.5.1/community-upcloud-0.5.1.tar.gz
+ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/download/v0.6.0/community-upcloud-0.6.0.tar.gz
 ```
 
 ### Inventory usage
@@ -54,10 +54,10 @@ export UPCLOUD_PASSWORD="verysecretpassword"
 And show the Ansible inventory information as a graph:
 
 ```bash
-ansible-inventory -i upcloud.yml --graph
+ansible-inventory -i upcloud.yml --graph --vars
 ```
 
-You should see a list of hosts.
+You should see a list of hosts and their host variables you can use in playbooks.
 
 #### Further examples
 
