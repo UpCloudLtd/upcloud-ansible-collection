@@ -1,0 +1,41 @@
+- name: Configure webserver
+  hosts: all
+  remote_user: admin
+  become: yes
+  serial: "{{ serial_override | default(1) }}"
+  vars:
+    animal: cow
+  tasks:
+    - name: Install nginx
+      apt:
+        package: nginx
+        state: latest
+        update_cache: yes
+    - name: Get latest static content release
+      uri:
+        url: https://api.github.com/repos/UpCloudLtd/hello-container/releases/latest
+      register: release
+    - name: Remote default from enabled sites
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify:
+        - Restart nginx
+    - name: Download and unarchive static content ({{ animal }})
+      unarchive:
+        remote_src: yes
+        src: https://github.com/UpCloudLtd/hello-container/releases/download/{{ release.json.tag_name }}/hello-{{ animal }}.tar.gz
+        dest: /usr/share/nginx/html/
+      notify:
+        - Restart nginx
+    - name: Configure nginx
+      get_url:
+        url: https://github.com/UpCloudLtd/hello-container/releases/download/{{ release.json.tag_name }}/index.conf
+        dest: /etc/nginx/conf.d/
+      notify:
+        - Restart nginx
+  handlers:
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
