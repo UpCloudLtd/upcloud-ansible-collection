@@ -1,0 +1,2 @@
+plugin: community.upcloud.upcloud
+server_group: ansible-inventory-example-servergroup
