@@ -30,7 +30,7 @@ ansible-playbook configure-webserver.yml --extra-vars "animal=tiger"
 To monitor how the rolling update proceeds, open another terminal window and curl the load-balancer URL. The URL is visible at the output of prevous `terraform apply` command and can be printed by running `terraform output`.
 
 ```sh
-watch -n 0.75 curl -s $(terraform -chdir=resources output lb_url)
+watch -n 0.75 curl -s $(terraform -chdir=resources output -raw lb_url)
 ```
 
 Finally, to cleanup the created cloud resources, run `terraform destroy` in the [resources](./resources) directory.
