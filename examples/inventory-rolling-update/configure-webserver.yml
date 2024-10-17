@@ -21,6 +21,15 @@
         state: absent
       notify:
         - Restart nginx
+    - name: Remove existing content from nginx
+      file:
+        path: /usr/share/nginx/html
+        state: absent
+    - name: Recreate empty directory for nginx content
+      file:
+        path: /usr/share/nginx/html
+        state: directory
+        mode: '0755'
     - name: Download and unarchive static content ({{ animal }})
       unarchive:
         remote_src: yes
