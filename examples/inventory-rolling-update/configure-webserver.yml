@@ -28,10 +28,15 @@
         dest: /usr/share/nginx/html/
       notify:
         - Restart nginx
-    - name: Configure nginx
+    - name: Download nginx config
       get_url:
         url: https://github.com/UpCloudLtd/hello-container/releases/download/{{ release.json.tag_name }}/index.conf
-        dest: /etc/nginx/conf.d/
+        dest: /etc/nginx/conf.d/index.conf
+    - name: Replace ${NGINX_PORT} with actual port
+      replace:
+        path: /etc/nginx/conf.d/index.conf
+        regexp: '\$\{NGINX_PORT\}'
+        replace: '80'
       notify:
         - Restart nginx
   handlers:
