@@ -3,7 +3,7 @@ __metaclass__ = type
 import pytest
 
 from ansible.inventory.data import InventoryData
-from .....plugins.inventory.upcloud import InventoryModule
+from .....plugins.inventory.servers import InventoryModule
 
 
 class Server:
@@ -385,7 +385,7 @@ def _mock_test_credentials():
 
 def get_option(option):
     options = {
-        'plugin': 'upcloud.cloud.upcloud',
+        'plugin': 'upcloud.cloud.servers',
         'strict': False,
     }
     return options.get(option)
@@ -419,7 +419,7 @@ def test_populate_hostvars(inventory, mocker):
 
 def get_filtered_labeled_option(option):
     options = {
-        'plugin': 'upcloud.cloud.upcloud',
+        'plugin': 'upcloud.cloud.servers',
         'labels': ['foo=bar'],
     }
     return options.get(option)
@@ -450,7 +450,7 @@ def test_filtering_with_labels(inventory, mocker):
 
 def get_filtered_connect_with_option(option):
     options = {
-        'plugin': 'upcloud.cloud.upcloud',
+        'plugin': 'upcloud.cloud.servers',
         'connect_with': 'private_ipv4',
         'network': '035146a5-7a85-408b-b1f8-21925164a7d3'
     }

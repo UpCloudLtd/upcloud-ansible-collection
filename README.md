@@ -41,7 +41,7 @@ servers based on their zone, tags, state, or the network they belong to.
 Create an `upcloud.yml` file with these contents:
 
 ```yaml
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 ```
 
 Set environment variables for API authentication:
@@ -64,7 +64,7 @@ You should see a list of hosts and their host variables you can use in playbooks
 You can filter based on multiple data points:
 
 ```yaml
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 zones:
   - fi-hel2
 labels:
@@ -80,7 +80,7 @@ server_group: Group name or UUID
 Servers can also be grouped by status, zone etc by specifying them as `keyed_groups`.
 
 ```yaml
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 keyed_groups:
   - key: zone
     prefix: upcloud_zone
@@ -92,7 +92,7 @@ Examples here assume that API credentials are available as environment variables
 (`UPCLOUD_USERNAME` & `UPCLOUD_PASSWORD`). They can also be defined in inventory file:
 
 ```yaml
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 username: YOUR_USERNAME
 password: YOUR_PASSWORD
 ```
@@ -108,7 +108,7 @@ enabled:
 collections_paths = ~/.ansible/collections:/usr/share/ansible/collections
 
 [inventory]
-enable_plugins = upcloud.cloud.upcloud
+enable_plugins = upcloud.cloud.servers
 ```
 
 Note that, if you are using any other plugins, those should be listed in `enable_plugins` as well.

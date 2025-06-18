@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking**: Rename collection to `upcloud.cloud` to enable releasing to Ansible Galaxy.
+- **Breaking**: Rename inventory plugin to `servers`.
 
 ## [0.6.0] - 2023-09-25
 

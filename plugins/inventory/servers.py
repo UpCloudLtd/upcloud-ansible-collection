@@ -1,11 +1,11 @@
 __metaclass__ = type
 
 DOCUMENTATION = r'''
-    name: upcloud
+    name: servers
     author:
       - Antti Myyrä (@ajmyyra)
       - UpCloud (@UpCloudLtd)
-    short_description: Ansible dynamic inventory plugin for UpCloud.
+    short_description: Ansible dynamic inventory plugin for UpCloud servers.
     requirements:
         - python >= 3.7
         - upcloud-api >= 2.5.0
@@ -18,7 +18,7 @@ DOCUMENTATION = r'''
         plugin:
             description: The name of the UpCloud Ansible inventory plugin
             required: true
-            choices: ["upcloud.cloud.upcloud"]
+            choices: ["upcloud.cloud.servers"]
         username:
             description: UpCloud API username.
             required: false
@@ -83,10 +83,10 @@ DOCUMENTATION = r'''
 
 EXAMPLES = r"""
 # Minimal example. `UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` are available as environment variables.
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 
 # Example with username and password
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 username: YOUR_USERNAME
 password: YOUR_PASSWORD
 zones:
@@ -96,7 +96,7 @@ labels:
   - foo
 
 # Example with locations, labels and server_group
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 zones:
   - es-mad1
   - fi-hel2
@@ -107,7 +107,7 @@ server_group: group name or uuid
 
 # Group by a zone with prefix e.g. "upcloud_zone_us-nyc1"
 # and state with prefix e.g. "server_state_running"
-plugin: upcloud.cloud.upcloud
+plugin: upcloud.cloud.servers
 keyed_groups:
   - key: zone
     prefix: upcloud_zone
