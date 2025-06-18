@@ -1,17 +1,18 @@
-namespace: community
-name: upcloud
-version: 0.6.0
+namespace: upcloud
+name: cloud
+version: 0.7.0
 readme: README.md
 authors:
   - UpCloud developers (github.com/UpCloudLtd)
 description: A collection for managing UpCloud resources & inventory
-license: MIT
+license:
+- MIT
 license_file: 'LICENSE'
 tags:
   - upcloud
   - cloud
 
 repository: https://github.com/UpCloudLtd/upcloud-ansible-collection
-documentation: TODO
+documentation: https://github.com/UpCloudLtd/upcloud-ansible-collection
 homepage: https://github.com/UpCloudLtd/upcloud-ansible-collection
 issues: https://github.com/UpCloudLtd/upcloud-ansible-collection/issues

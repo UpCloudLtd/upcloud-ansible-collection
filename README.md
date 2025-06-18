@@ -7,7 +7,7 @@
 UpCloud inventory as a modernized Ansible collection. Current scope only covers UpCloud's servers offering,
 but depending on the demand we might include our other services (networks, (object) storages, routers, databases etc)
 in it as well. Same goes for plugins for other API actions. We recommend using
-[Terraform](https://upcloud.com/community/tutorials/get-started-terraform/) for automated management of your UpCloud
+[Terraform](https://upcloud.com/docs/guides/get-started-terraform/) for automated management of your UpCloud
 infrastructure, but we might implement some server control plugins for Ansible in the future if the demand is there.
 
 If you find yourself needing a specific service as an inventory, please open an
@@ -41,7 +41,7 @@ servers based on their zone, tags, state, or the network they belong to.
 Create an `upcloud.yml` file with these contents:
 
 ```yaml
-plugin: community.upcloud.upcloud
+plugin: upcloud.cloud.upcloud
 ```
 
 Set environment variables for API authentication:
@@ -64,7 +64,7 @@ You should see a list of hosts and their host variables you can use in playbooks
 You can filter based on multiple data points:
 
 ```yaml
-plugin: community.upcloud.upcloud
+plugin: upcloud.cloud.upcloud
 zones:
   - fi-hel2
 labels:
@@ -80,7 +80,7 @@ server_group: Group name or UUID
 Servers can also be grouped by status, zone etc by specifying them as `keyed_groups`.
 
 ```yaml
-plugin: community.upcloud.upcloud
+plugin: upcloud.cloud.upcloud
 keyed_groups:
   - key: zone
     prefix: upcloud_zone
@@ -92,7 +92,7 @@ Examples here assume that API credentials are available as environment variables
 (`UPCLOUD_USERNAME` & `UPCLOUD_PASSWORD`). They can also be defined in inventory file:
 
 ```yaml
-plugin: community.upcloud.upcloud
+plugin: upcloud.cloud.upcloud
 username: YOUR_USERNAME
 password: YOUR_PASSWORD
 ```
@@ -108,7 +108,7 @@ enabled:
 collections_paths = ~/.ansible/collections:/usr/share/ansible/collections
 
 [inventory]
-enable_plugins = community.upcloud.upcloud
+enable_plugins = upcloud.cloud.upcloud
 ```
 
 Note that, if you are using any other plugins, those should be listed in `enable_plugins` as well.
