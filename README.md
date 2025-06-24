@@ -28,7 +28,7 @@ pip3 install upcloud-api>=2.5.0
 The collection itself can be installed with the `ansible-galaxy` command that comes with the Ansible package:
 
 ```bash
-ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/download/v0.6.0/community-upcloud-0.6.0.tar.gz
+ansible-galaxy collection install https://github.com/UpCloudLtd/upcloud-ansible-collection/releases/download/v0.7.0/community-upcloud-0.7.0.tar.gz
 ```
 
 ### Inventory usage
