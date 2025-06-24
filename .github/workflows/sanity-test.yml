@@ -4,9 +4,10 @@ on:
     branches:
       - main
   pull_request:
+
 env:
-  NAMESPACE: community
-  COLLECTION_NAME: upcloud
+  NAMESPACE: upcloud
+  COLLECTION_NAME: cloud
 
 jobs:
   sanity:
@@ -14,9 +15,9 @@ jobs:
     strategy:
       matrix:
         version:
-          - { ansible: stable-2.13, python: "3.10" }
-          - { ansible: stable-2.14, python: "3.11" }
-          - { ansible: stable-2.15, python: "3.11" }
+          - { ansible: stable-2.16, python: "3.11" }
+          - { ansible: stable-2.17, python: "3.11" }
+          - { ansible: stable-2.18, python: "3.11" }
           - { ansible: devel, python: "3.11" }
     runs-on: ubuntu-latest
     steps:

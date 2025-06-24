@@ -5,9 +5,9 @@ on:
       - "v*"
 
 env:
-  NAMESPACE: community
-  COLLECTION_NAME: upcloud
-  ANSIBLE_VERSION: stable-2.15
+  NAMESPACE: upcloud
+  COLLECTION_NAME: cloud
+  ANSIBLE_VERSION: stable-2.18
 
 jobs:
   units:
@@ -30,9 +30,14 @@ jobs:
         run: mkdir release && ansible-galaxy collection build --output-path release/
 
       - name: Create new release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.16.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: false
           artifacts: "release/${{env.NAMESPACE}}-${{env.COLLECTION_NAME}}*.tar.gz"
+
+      - name: Upload release to Ansible Galaxy
+        uses: artis3n/ansible_galaxy_collection@v2.11.0
+        with:
+          api_key: ${{ secrets.GALAXY_TOKEN }}

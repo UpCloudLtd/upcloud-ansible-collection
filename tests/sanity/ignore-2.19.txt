@@ -1,1 +1,1 @@
-plugins/inventory/upcloud.py validate-modules:missing-gplv3-license
+plugins/inventory/servers.py validate-modules:missing-gplv3-license
