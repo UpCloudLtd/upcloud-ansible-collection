@@ -12,5 +12,5 @@
 1. Create and push a new tag e.g `v2.3.5`
 1. GitHub actions will trigger on tag and do a build & release of the tagged version
 1. Check [the release page](https://github.com/UpCloudLtd/upcloud-ansible-collection/releases) for the release
-1. Add correct changelog to the release if it's missing
+1. Add correct changelog to the release if it's missing and publish the release
 1. Done!
