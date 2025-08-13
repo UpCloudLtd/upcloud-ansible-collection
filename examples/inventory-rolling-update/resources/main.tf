@@ -2,7 +2,7 @@ terraform {
   required_providers {
     upcloud = {
       source  = "UpCloudLtd/upcloud"
-      version = "~> 2.4"
+      version = "~> 5.23"
     }
   }
 }
@@ -78,7 +78,7 @@ resource "upcloud_server_group" "webservers" {
 }
 
 module "load_balancer" {
-  source = "UpCloudLtd/basic-loadbalancer/upcloud"
+  source = "git::https://github.com/UpCloudLtd/terraform-upcloud-basic-loadbalancer.git?ref=chore/update-tf-provider"
 
   name                = "${var.prefix}lb"
   zone                = var.zone

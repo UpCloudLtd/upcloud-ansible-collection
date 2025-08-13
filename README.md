@@ -4,22 +4,15 @@
 [![Ansible sanity tests](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/sanity-test.yml)
 [![unit tests](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/UpCloudLtd/upcloud-ansible-collection/actions/workflows/unit-tests.yml)
 
-UpCloud inventory as a modernized Ansible collection. Current scope only covers UpCloud's servers offering,
-but depending on the demand we might include our other services (networks, (object) storages, routers, databases etc)
-in it as well. Same goes for plugins for other API actions. We recommend using
-[Terraform](https://upcloud.com/docs/guides/get-started-terraform/) for automated management of your UpCloud
-infrastructure, but we might implement some server control plugins for Ansible in the future if the demand is there.
+This collection provides an inventory plugin for using your UpCloud servers in an Ansible inventory.
 
-If you find yourself needing a specific service as an inventory, please open an
-[issue](https://github.com/UpCloudLtd/upcloud-ansible-collection/issues). Please see the development & contribution
-sections below for development quickstart if you're interested in adding new features or making fixes.
+For managing your UpCloud infrastructure as code, we recommend OpenTofu or [Terraform](https://upcloud.com/docs/guides/get-started-terraform/).
 
 ## Getting Started
 
 ### Prerequisites
 
-UpCloud Collection requires [UpCloud API's Python bindings](https://pypi.org/project/upcloud-api/) version 2.5.0 or
-newer in order to work. It can be installed from the Python Package Index with the `pip` tool:
+UpCloud Collection requires [UpCloud API's Python bindings](https://pypi.org/project/upcloud-api/) version 2.5.0 or newer in order to work. Use version 2.8.0 or later for API token and system keyring support. It can be installed from the Python Package Index with the `pip` tool:
 
 ```bash
 pip3 install upcloud-api>=2.5.0
@@ -90,14 +83,7 @@ keyed_groups:
     prefix: server_state
 ```
 
-Examples here assume that API credentials are available as environment variables
-(`UPCLOUD_USERNAME` & `UPCLOUD_PASSWORD`). They can also be defined in inventory file:
-
-```yaml
-plugin: upcloud.cloud.servers
-username: YOUR_USERNAME
-password: YOUR_PASSWORD
-```
+Examples here assume that API credentials are available as environment variables (`UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` or `UPCLOUD_TOKEN`) or in system keyring. Use `upctl account login` command to store the credentials in keyring.
 
 ## Troubleshooting
 
