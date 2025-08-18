@@ -35,6 +35,14 @@ DOCUMENTATION = r'''
             default: UPCLOUD_PASSWORD
             type: str
             required: false
+        token:
+            description: UpCloud API token.
+            required: false
+        token_env:
+            description: Environment variable to load the UpCloud API token from.
+            default: UPCLOUD_TOKEN
+            type: str
+            required: false
         connect_with:
             description: Connect to the server with the specified choice. Server is skipped if chosen type is not available.
             default: public_ipv4
@@ -150,8 +158,30 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.password = self.templar.template(self.get_option("password"), fail_on_undefined=False) or os.getenv(
             self.password_env
         )
+        self.token_env = self.get_option("token_env")
+        self.token = self.templar.template(self.get_option("token"), fail_on_undefined=False) or os.getenv(
+            self.token_env
+        )
 
-        self.client = upcloud_api.CloudManager(self.username, self.password)
+        # Token support was added in upcloud-api 2.8.0, older versions will raise TypeError if token is provided.
+        # Ignore the error if token is not provided, in which case older version should work as well.
+        try:
+            credentials = upcloud_api.Credentials.parse(
+                username=self.username,
+                password=self.password,
+                token=self.token,
+            )
+            self.client = upcloud_api.CloudManager(**credentials.dict)
+        except (AttributeError, TypeError):
+            try:
+                self.client = upcloud_api.CloudManager(self.username, self.password)
+            except Exception:
+                raise AnsibleError(
+                    'Invalid or missing UpCloud API credentials. '
+                    'The version of upcloud-api you are using does not support token authentication or parsing credentials from the environment. '
+                    'Update upcloud-api to version 2.8.0 or later.'
+                ) from None
+
         self.client.api.user_agent = f"upcloud-ansible-inventory/{__version__}"
 
         api_root_env = "UPCLOUD_API_ROOT"

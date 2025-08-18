@@ -13,6 +13,7 @@ First configure your credentials to UpCloud Terraform provider and Ansible inven
 Create the servers defined in the Terraform configuration with `terraform apply` command.
 
 ```sh
+terraform -chdir=resources init
 terraform -chdir=resources apply
 # Answer yes, when prompted by Terraform to accept the plan
 ```

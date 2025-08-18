@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support authentication with API tokens (requires upcloud-api>=2.8.0).
+- Parse credentials from environment variables and system keyring similarly than in our Go based tooling (requires upcloud-api>=2.8.0, keyring support requires keyring package).
+
 ## [0.7.0] - 2025-06-24
 
 ### Changed
