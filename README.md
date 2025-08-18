@@ -39,9 +39,13 @@ Create an `upcloud.yml` file with these contents:
 plugin: upcloud.cloud.servers
 ```
 
-Set environment variables for API authentication:
+Configure API authentication by using `upctl account login` command or set credentials with environment variables:
 
 ```bash
+# Use API token...
+export UPCLOUD_TOKEN="ucat_..."
+
+# ...or username and password
 export UPCLOUD_USERNAME="upcloud-api-access-enabled-user"
 export UPCLOUD_PASSWORD="verysecretpassword"
 ```
@@ -128,6 +132,5 @@ $ ansible-test units -v --color --docker --coverage
 A new version can be built and tested locally with the `ansible-galaxy` tool that is packaged with Ansible.
 
 ```bash
-ansible-galaxy collection build
-ansible-galaxy collection install community-upcloud-<VERSION>.tar.gz
+ansible-galaxy collection install --force .
 ```
