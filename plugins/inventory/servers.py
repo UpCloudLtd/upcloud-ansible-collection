@@ -166,18 +166,21 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         # Token support was added in upcloud-api 2.8.0, older versions will raise TypeError if token is provided.
         # Ignore the error if token is not provided, in which case older version should work as well.
         try:
-            self.client = upcloud_api.CloudManager(
+            credentials = upcloud_api.Credentials.parse(
                 username=self.username,
                 password=self.password,
                 token=self.token,
             )
-        except TypeError:
-            if self.token:
+            self.client = upcloud_api.CloudManager(**credentials.dict)
+        except (AttributeError, TypeError):
+            try:
+                self.client = upcloud_api.CloudManager(self.username, self.password)
+            except Exception:
                 raise AnsibleError(
-                    'The version of upcloud-api you are using does not support token authentication. '
+                    'Invalid or missing UpCloud API credentials. '
+                    'The version of upcloud-api you are using does not support token authentication or parsing credentials from the environment. '
                     'Update upcloud-api to version 2.8.0 or later.'
                 ) from None
-            self.client = upcloud_api.CloudManager(self.username, self.password)
 
         self.client.api.user_agent = f"upcloud-ansible-inventory/{__version__}"
 

@@ -78,7 +78,8 @@ resource "upcloud_server_group" "webservers" {
 }
 
 module "load_balancer" {
-  source = "git::https://github.com/UpCloudLtd/terraform-upcloud-basic-loadbalancer.git?ref=chore/update-tf-provider"
+  source = "UpCloudLtd/basic-loadbalancer/upcloud"
+  version = "~> 2.0"
 
   name                = "${var.prefix}lb"
   zone                = var.zone
