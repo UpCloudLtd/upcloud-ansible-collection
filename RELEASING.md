@@ -7,7 +7,6 @@
     1. Update links at the bottom of the page
     1. Leave "Unreleased" section at the top empty
 1. Update `galaxy.yml` with the new version
-1. Update README.md's download link with the new version
 1. Merge your release branch to the stable branch
 1. Create and push a new tag e.g `v2.3.5`
 1. GitHub actions will trigger on tag and do a build & release of the tagged version
