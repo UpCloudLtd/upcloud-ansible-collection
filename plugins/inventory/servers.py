@@ -128,8 +128,9 @@ from typing import List
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
-from ansible.release import __version__
 from ansible.utils.display import Display
+
+from ..version import collection_version
 
 display = Display()
 
@@ -182,7 +183,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                     'Update upcloud-api to version 2.8.0 or later.'
                 ) from None
 
-        self.client.api.user_agent = f"upcloud-ansible-inventory/{__version__}"
+        version = collection_version() or "dev"
+        self.client.api.user_agent = f"upcloud-ansible-inventory/{version}"
 
         api_root_env = "UPCLOUD_API_ROOT"
         if os.getenv(api_root_env):
