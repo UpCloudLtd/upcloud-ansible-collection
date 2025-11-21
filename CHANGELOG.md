@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Experimental support for managing load balancer backend member weights.
+
+### Changed
+
+- Use `upcloud-ansible-collection` as prefix in the User-Agent header.
+
 ## [0.8.1] - 2025-09-04
 
 ### Fixed

@@ -130,12 +130,11 @@ from ansible.module_utils._text import to_native
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible.utils.display import Display
 
-from ..version import collection_version
+from ..module_utils.client import initialize_upcloud_client
 
 display = Display()
 
 try:
-    import upcloud_api
     from upcloud_api.errors import UpCloudAPIError
     UC_AVAILABLE = True
 except ImportError:
@@ -164,37 +163,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             self.token_env
         )
 
-        # Token support was added in upcloud-api 2.8.0, older versions will raise TypeError if token is provided.
-        # Ignore the error if token is not provided, in which case older version should work as well.
-        try:
-            credentials = upcloud_api.Credentials.parse(
-                username=self.username,
-                password=self.password,
-                token=self.token,
-            )
-            self.client = upcloud_api.CloudManager(**credentials.dict)
-        except (AttributeError, TypeError):
-            try:
-                self.client = upcloud_api.CloudManager(self.username, self.password)
-            except Exception:
-                raise AnsibleError(
-                    'Invalid or missing UpCloud API credentials. '
-                    'The version of upcloud-api you are using does not support token authentication or parsing credentials from the environment. '
-                    'Update upcloud-api to version 2.8.0 or later.'
-                ) from None
-
-        version = collection_version() or "dev"
-        self.client.api.user_agent = f"upcloud-ansible-inventory/{version}"
-
-        api_root_env = "UPCLOUD_API_ROOT"
-        if os.getenv(api_root_env):
-            self.client.api.api_root = os.getenv(api_root_env)
-
-    def _test_upcloud_credentials(self):
-        try:
-            self.client.authenticate()
-        except UpCloudAPIError:
-            raise AnsibleError("Invalid UpCloud API credentials.")
+        self.client = initialize_upcloud_client(self.username, self.password, self.token)
 
     def _fetch_servers(self):
         return self.client.get_servers()
@@ -386,7 +355,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _populate(self):
         self._initialize_upcloud_client()
-        self._test_upcloud_credentials()
         self._get_servers()
         self._filter_servers()
 
