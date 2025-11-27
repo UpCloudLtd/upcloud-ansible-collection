@@ -18,6 +18,12 @@ terraform -chdir=resources apply
 # Answer yes, when prompted by Terraform to accept the plan
 ```
 
+Save load-balancer UUID into a variable file `variables.yml` to be used by the Ansible playbook.
+
+```sh
+echo "loadbalancer_uuid: $(terraform -chdir=resources output -raw lb_uuid)" > variables.yml
+```
+
 Configure a NGINX server with static web page by running the [configure-webserver.yml](./configure-webserver.yml) playbook.
 
 ```sh
