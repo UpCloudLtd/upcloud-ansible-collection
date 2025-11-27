@@ -18,14 +18,20 @@ terraform -chdir=resources apply
 # Answer yes, when prompted by Terraform to accept the plan
 ```
 
+Save load-balancer UUID into a variable file `variables.yml` to be used by the Ansible playbook.
+
+```sh
+echo "loadbalancer_uuid: $(terraform -chdir=resources output -raw lb_uuid)" > variables.yml
+```
+
 Configure a NGINX server with static web page by running the [configure-webserver.yml](./configure-webserver.yml) playbook.
 
 ```sh
 # For initial configuration, configure all targets in parallel
-ansible-playbook configure-webserver.yml --extra-vars "serial_override=0"
+ansible-playbook configure-webserver.yml --extra-vars "@variables.yml" --extra-vars "serial_override=0"
 
 # When updating the targets, specify which tag (cow, dog, hello, or tiger) to use
-ansible-playbook configure-webserver.yml --extra-vars "animal=tiger"
+ansible-playbook configure-webserver.yml --extra-vars "@variables.yml" --extra-vars "animal=tiger"
 ```
 
 To monitor how the rolling update proceeds, open another terminal window and curl the load-balancer URL. The URL is visible at the output of prevous `terraform apply` command and can be printed by running `terraform output`.

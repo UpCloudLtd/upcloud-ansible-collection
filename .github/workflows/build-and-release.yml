@@ -27,7 +27,11 @@ jobs:
         run: pip install https://github.com/ansible/ansible/archive/${{env.ANSIBLE_VERSION}}.tar.gz --disable-pip-version-check
 
       - name: Build project release
-        run: mkdir release && ansible-galaxy collection build --output-path release/
+        run: |
+          version=$(grep "version" galaxy.yml | sed -E "s/version:\s+//")
+          test "${{ github.ref_name }}" = "v$version"
+          sed -E "s/(VERSION\s+=\s+).*/\1\"$version\"/" -i plugins/module_utils/client.py
+          mkdir release && ansible-galaxy collection build --output-path release/
 
       - name: Create new release
         uses: ncipollo/release-action@v1.16.0

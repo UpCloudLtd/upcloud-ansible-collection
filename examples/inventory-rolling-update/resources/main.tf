@@ -93,3 +93,7 @@ module "load_balancer" {
 output "lb_url" {
   value = module.load_balancer.dns_name
 }
+
+output "lb_uuid" {
+  value = module.load_balancer.id
+}

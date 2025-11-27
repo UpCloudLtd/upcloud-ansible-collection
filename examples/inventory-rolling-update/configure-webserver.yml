@@ -6,6 +6,17 @@
   vars:
     animal: cow
   tasks:
+    - name: Remove from load balancing
+      upcloud.cloud.loadbalancer_backend_member:
+        loadbalancer_uuid: "{{ loadbalancer_uuid }}"
+        backend_name: main
+        member_name: "member_{{ ansible_facts.hostname[-1:] }}"
+        weight: 0
+      when:
+      - serial_override|default(1)|int != 0
+      - loadbalancer_uuid is defined
+      delegate_to: localhost
+      become: false
     - name: Install nginx
       apt:
         package: nginx
@@ -48,6 +59,17 @@
         replace: '80'
       notify:
         - Restart nginx
+    - name: Add back to load balancing
+      upcloud.cloud.loadbalancer_backend_member:
+        loadbalancer_uuid: "{{ loadbalancer_uuid }}"
+        backend_name: main
+        member_name: "member_{{ ansible_facts.hostname[-1:] }}"
+        weight: 100
+      when:
+      - serial_override|default(1)|int != 0
+      - loadbalancer_uuid is defined
+      delegate_to: localhost
+      become: false
   handlers:
     - name: Restart nginx
       service:
