@@ -9,10 +9,14 @@ env:
   COLLECTION_NAME: cloud
   ANSIBLE_VERSION: stable-2.18
 
+permissions: {}
+
 jobs:
   units:
     runs-on: ubuntu-latest
     name: Build and release
+    permissions:
+      contents: write
 
     steps:
       - name: Check out code
