@@ -38,8 +38,7 @@ jobs:
       - name: Install ansible-base (${{ matrix.version.ansible }})
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.version.ansible }}.tar.gz --disable-pip-version-check
 
-      # Run the unit tests
-      - name: Run unit test
+      - name: Run unit tests
         run: ansible-test units -v --color --docker --coverage
         working-directory: ./ansible_collections/${{env.NAMESPACE}}/${{env.COLLECTION_NAME}}
 

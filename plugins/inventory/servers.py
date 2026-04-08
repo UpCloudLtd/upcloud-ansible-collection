@@ -44,9 +44,13 @@ DOCUMENTATION = r'''
             type: str
             required: false
         connect_with:
-            description: Connect to the server with the specified choice. Server is skipped if chosen type is not available.
+            description: >
+                Connect to the server with the specified method. Define multiple methods in order of preference to configure fallback. For example,
+                V(["public_ipv4", "private_ipv4"]) would try to find public IPv4 and fall back to private IPv4 if public IPv4 is not available. Server is
+                skipped if none of the chosen types are available.
             default: public_ipv4
-            type: str
+            type: list
+            elements: str
             choices:
                 - public_ipv4
                 - public_ipv6
@@ -126,7 +130,7 @@ keyed_groups:
 import os
 from typing import List
 from ansible.errors import AnsibleError
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible.utils.display import Display
 
@@ -268,6 +272,44 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
             self.servers = tmp
 
+    def _get_ansible_host(self, public_ipv4, public_ipv6, util_addrs, server, server_details):
+        connect_with = _ensure_list(self.get_option("connect_with"))
+
+        for method in connect_with:
+            display.vv(f'Trying to find {method} connection method for server {server.uuid} ({server.hostname})')
+
+            if method == "public_ipv4":
+                if len(public_ipv4) > 0:
+                    return public_ipv4[0]
+                else:
+                    display.v(
+                        f"No available public IPv4 addresses for server {server.uuid} ({server.hostname})")
+
+            if method == "public_ipv6":
+                if len(public_ipv6) > 0:
+                    return public_ipv6[0]
+                else:
+                    display.v(
+                        f"No available public IPv6 addresses for server {server.uuid} ({server.hostname})")
+            if method == "utility_ipv4":
+                if len(util_addrs) > 0:
+                    return util_addrs[0]
+                else:
+                    display.v(
+                        f"No available utility addresses for server {server.uuid} ({server.hostname})")
+            if method == "hostname":
+                return server.hostname
+            if method == "private_ipv4":
+                if self.get_option("network"):
+                    for iface in server_details.networking["interfaces"]["interface"]:
+                        if iface["network"] == self.network.uuid:
+                            return iface["ip_addresses"]["ip_address"][0].get("address")
+                else:
+                    raise AnsibleError("You can only connect with private IPv4 if you specify a network")
+
+        raise NoAvailableAddressException(
+            f"None of the requested connection types {connect_with} are available for server {server.uuid} ({server.hostname})")
+
     def _get_server_attributes(self, server):
         server_details = self._fetch_server_details(server.uuid)
 
@@ -302,47 +344,20 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 if iface.get("type") == "utility":
                     util_addrs.append(address)
 
-        public_ipv4 = list(set(ipv4_addrs) & set(publ_addrs))
-        public_ipv6 = list(set(ipv6_addrs) & set(publ_addrs))
+        public_ipv4 = _ordered_intersection(ipv4_addrs, publ_addrs)
+        public_ipv6 = _ordered_intersection(ipv6_addrs, publ_addrs)
 
         # We default to IPv4 when available
         if len(public_ipv4) > 0:
             attributes.append(_new_attribute("public_ip", to_native(public_ipv4[0])))
         elif len(public_ipv6) > 0:
-            attributes.append(_new_attribute("public_ip", to_native(public_ipv4[0])))
+            attributes.append(_new_attribute("public_ip", to_native(public_ipv6[0])))
 
         if len(util_addrs) > 0:
             attributes.append(_new_attribute("utility_ip", to_native(util_addrs[0])))
 
-        connect_with = self.get_option("connect_with")
-        if connect_with == "public_ipv4":
-            if len(public_ipv4) == 0:
-                raise NoAvailableAddressException(
-                    f"No available public IPv4 addresses for server {server.uuid} ({server.hostname})")
-            attributes.append(_new_attribute("ansible_host", to_native(public_ipv4[0])))
-
-        elif connect_with == "public_ipv6":
-            if len(public_ipv6) == 0:
-                raise NoAvailableAddressException(
-                    f"No available public IPv6 addresses for server {server.uuid} ({server.hostname})")
-            attributes.append(_new_attribute("ansible_host", to_native(public_ipv6[0])))
-        elif connect_with == "utility_ipv4":
-            if len(util_addrs) == 0:
-                raise NoAvailableAddressException(
-                    f"No available utility addresses for server {server.uuid} ({server.hostname})")
-            attributes.append(_new_attribute("ansible_host", to_native(util_addrs[0])))
-        elif connect_with == "hostname":
-            attributes.append(_new_attribute("ansible_host", to_native(server.hostname)))
-        elif connect_with == "private_ipv4":
-            if self.get_option("network"):
-                for iface in server_details.networking["interfaces"]["interface"]:
-                    if iface["network"] == self.network.uuid:
-                        attributes.append(_new_attribute(
-                            "ansible_host",
-                            to_native(iface["ip_addresses"]["ip_address"][0].get("address")))
-                        )
-            else:
-                raise AnsibleError("You can only connect with private IPv4 if you specify a network")
+        ansible_host = self._get_ansible_host(public_ipv4, public_ipv6, util_addrs, server, server_details)
+        attributes.append(_new_attribute("ansible_host", to_native(ansible_host)))
 
         return attributes
 
@@ -390,17 +405,33 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), {}, server.hostname, strict=strict)
 
-    def parse(self, inventory, loader, path, cache=True):
-        super(InventoryModule, self).parse(inventory, loader, path, cache)
-
+    def _check_upcloud_api_installed(self):
         if not UC_AVAILABLE:
             raise AnsibleError(
                 "UpCloud dynamic inventory plugin requires upcloud-api Python module, "
                 + "see https://pypi.org/project/upcloud-api/")
 
-        self._read_config_data(path)
+    def parse(self, inventory, loader, path, cache=True):
+        super(InventoryModule, self).parse(inventory, loader, path, cache)
 
+        self._check_upcloud_api_installed()
+        self._read_config_data(path)
         self._populate()
+
+
+def _ensure_list(value) -> List:
+    if value is None:
+        return []
+
+    if isinstance(value, list):
+        return value
+
+    return [value]
+
+
+def _ordered_intersection(a, b):
+    b_dict = {i: True for i in b}
+    return [i for i in a if i in b_dict]
 
 
 def _parse_server_labels(labels: List):
