@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Accept list of methods as value to `connect_with`. This allows defining multiple connection methods in order of preference to configure fallback. For example, V(["public_ipv4", "private_ipv4"]) would try to find public IPv4 and fall back to private IPv4 if public IPv4 is not available.
+- Accept list of methods as value to `connect_with`. This allows defining multiple connection methods in order of preference to configure fallback. For example, `["public_ipv4", "private_ipv4"]` would try to find public IPv4 and fall back to private IPv4 if public IPv4 is not available.
 
 ## [0.9.0] - 2025-11-27
 
