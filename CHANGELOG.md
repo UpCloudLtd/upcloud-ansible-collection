@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-04-08
+
 ### Changed
 
 - Accept list of methods as value to `connect_with`. This allows defining multiple connection methods in order of preference to configure fallback. For example, V(["public_ipv4", "private_ipv4"]) would try to find public IPv4 and fall back to private IPv4 if public IPv4 is not available.
@@ -64,7 +66,8 @@ First release for the new UpCloud Ansible Collection! :tada:
 
 - Ansible inventory for UpCloud servers, allowing filtering with zones, tags, networks or server states.
 
-[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.7.0...v0.8.0
