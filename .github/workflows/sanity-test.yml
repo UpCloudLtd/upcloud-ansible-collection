@@ -9,6 +9,8 @@ env:
   NAMESPACE: upcloud
   COLLECTION_NAME: cloud
 
+permissions: {}
+
 jobs:
   sanity:
     name: Sanity test (${{ matrix.version.ansible }})
@@ -20,6 +22,9 @@ jobs:
           - { ansible: stable-2.20, python: "3.12" }
           - { ansible: devel, python: "3.12" }
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
       - name: Check out code
         uses: actions/checkout@v1
