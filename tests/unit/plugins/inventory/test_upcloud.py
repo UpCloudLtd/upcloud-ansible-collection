@@ -437,31 +437,80 @@ def test_populate_hostvars(inventory, mocker):
     assert host2.vars['labels'][0] == "foo=bar"
 
 
-def get_filtered_labeled_option(option):
+def get_filtering_with_labels_or_options(option):
     options = {
         'plugin': 'upcloud.cloud.servers',
-        'connect_with': ['public_ipv4'],
+        'connect_with': ['public_ipv4', 'private_ipv4'],
         'labels': ['foo=bar'],
+        'network': ["public", '035146a5-7a85-408b-b1f8-21925164a7d3'],
     }
     return options.get(option)
 
 
-def test_filtering_with_labels(inventory, mocker):
+def test_filtering_with_labels_or(inventory, mocker):
     inventory._fetch_servers = mocker.MagicMock(side_effect=get_servers)
     inventory._fetch_server_details = mocker.MagicMock(side_effect=get_server_details)
-    inventory.get_option = mocker.MagicMock(side_effect=get_filtered_labeled_option)
+    inventory.get_option = mocker.MagicMock(side_effect=get_filtering_with_labels_or_options)
 
     inventory._initialize_upcloud_client = _mock_initialize_client
     inventory._test_upcloud_credentials = _mock_test_credentials
 
     inventory._populate()
 
-    assert len(inventory.inventory.hosts) == 1
+    assert len(inventory.inventory.hosts) == 2
     host2 = inventory.inventory.get_host('server2')
-    # host3 has the label, but it is filtered out by connect_with
+    host3 = inventory.inventory.get_host('server3')
 
     assert host2.vars['id'] == "004d5201-e2ff-4325-7ac6-a274f1c517b7"
     assert host2.vars['labels'][0] == "foo=bar"
+
+    assert host3.vars['id'] == "0003295f-343a-44a2-8080-fb8196a6802a"
+
+
+def get_filtering_with_labels_or_options(option):
+    options = {
+        'plugin': 'upcloud.cloud.servers',
+        'connect_with': ['public_ipv4', 'private_ipv4'],
+        'labels': ['foo=bar'],
+        'labels_operator': 'or',
+        'network': ["public", '035146a5-7a85-408b-b1f8-21925164a7d3'],
+    }
+    return options.get(option)
+
+
+def get_filtering_with_labels_and_options(option):
+    options = {
+        'plugin': 'upcloud.cloud.servers',
+        'connect_with': ['public_ipv4', 'private_ipv4'],
+        'labels': [
+            'foo=bar',
+            'private=yes',
+        ],
+        'labels_operator': 'and',
+        'network': ["public", '035146a5-7a85-408b-b1f8-21925164a7d3'],
+    }
+    return options.get(option)
+
+
+def test_filtering_with_labels_and(inventory, mocker):
+    inventory._fetch_servers = mocker.MagicMock(side_effect=get_servers)
+    inventory._fetch_server_details = mocker.MagicMock(side_effect=get_server_details)
+    inventory.get_option = mocker.MagicMock(side_effect=get_filtering_with_labels_and_options)
+
+    inventory._initialize_upcloud_client = _mock_initialize_client
+    inventory._test_upcloud_credentials = _mock_test_credentials
+
+    inventory._fetch_network_details = get_network_details
+
+    inventory._populate()
+
+    assert len(inventory.inventory.hosts) == 1
+    host3 = inventory.inventory.get_host('server3')
+
+    assert host3.vars['id'] == "0003295f-343a-44a2-8080-fb8196a6802a"
+    assert len(host3.vars['labels']) == 2
+    assert host3.vars['labels'][0] == "foo=bar"
+    assert host3.vars['labels'][1] == "private=yes"
 
 
 def get_filtered_connect_with_option(option):
