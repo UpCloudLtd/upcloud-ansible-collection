@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `labels_operator` option to inventory plugin to select how matching with multiple labels is done. I.e., add option to select only servers that have all of the specified labels.
+
+### Changed
+
+- Accept list of values for `network` to allow filtering with multiple networks. Server is included if it is attached to any of the specified networks.
+
 ## [0.10.0] - 2026-04-08
 
 ### Changed

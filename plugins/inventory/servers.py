@@ -75,10 +75,21 @@ DOCUMENTATION = r'''
             elements: str
             required: false
         labels:
-            description: Populate inventory with instances with any of these labels, either just key or value ("foo" or "bar") or as a whole tag ("foo=bar")
+            description: >
+                Populate inventory with servers that have matching labels. You can define the labels as key, value, or key-value pair (e.g. V("env"),
+                V("prod"), or V("env=prod")). By default, server is included if it has any of the specified labels. Use O(labels_operator) to change this
+                behavior.
             default: []
             type: list
             elements: str
+            required: false
+        labels_operator:
+            description: Operator to use when filtering servers by labels.
+            default: "or"
+            type: str
+            choices:
+                - and
+                - or
             required: false
         states:
             description: Populate inventory with instances with these states.
@@ -87,9 +98,12 @@ DOCUMENTATION = r'''
             elements: str
             required: false
         network:
-            description: Populate inventory with instances which are attached to this network name or UUID.
+            description: >
+                Populate inventory with servers that are attached to any of the given networks. Value can be network UUID, V("public"), or V("utility"). First
+                matching private network is used as C(ansible_host) when using O(connect_with=private_ipv4).
             default: ""
-            type: str
+            type: list
+            elements: str
             required: false
 '''
 
@@ -173,10 +187,15 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         return self.client.get_servers()
 
     def _fetch_server_details(self, uuid):
-        return self.client.get_server(uuid)
+        try:
+            return self._servers[uuid]
+        except AttributeError:
+            self._servers = {}
+            self._servers[uuid] = self.client.get_server(uuid)
+        except KeyError:
+            self._servers[uuid] = self.client.get_server(uuid)
 
-    def _fetch_network_details(self, uuid):
-        return self.client.get_network(uuid)
+        return self._servers[uuid]
 
     def _fetch_server_groups(self):
         return self.client.api.get_request("/server-group/")
@@ -221,28 +240,20 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             display.vv("Choosing servers by labels")
             tmp = []
             for server in self.servers:
-                for wanted_label in self.get_option("labels"):
-                    server_labels = _parse_server_labels(server.labels['label'])
-                    for server_label in server_labels:
-                        display.vvvv(f"Comparing wanted label {wanted_label} against labels {server_label} of server {server.hostname}")
-                        if wanted_label in server_label:
-                            tmp.append(server)
+                if _match_by_labels(server, self.get_option("labels"), self.get_option("labels_operator")):
+                    tmp.append(server)
 
             self.servers = tmp
 
-        if self.get_option("network"):
+        networks = _ensure_list(self.get_option("network"))
+        if networks:
             display.vv("Choosing servers by network")
-            try:
-                self.network = self._fetch_network_details(self.get_option("network"))
-            except UpCloudAPIError as exp:
-                raise AnsibleError(str(exp))
-
             tmp = []
-            if getattr(self.network, "servers"):
-                for server in self.servers:
-                    for net_server in self.network.servers["server"]:
-                        if server.uuid == net_server["uuid"]:
-                            tmp.append(server)
+
+            for server in self.servers:
+                server_details = self._fetch_server_details(server.uuid)
+                if _match_by_networks(server_details, networks):
+                    tmp.append(server)
 
             self.servers = tmp
 
@@ -274,6 +285,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     def _get_ansible_host(self, public_ipv4, public_ipv6, util_addrs, server, server_details):
         connect_with = _ensure_list(self.get_option("connect_with"))
+        networks = _ensure_list(self.get_option("network"))
 
         for method in connect_with:
             display.vv(f'Trying to find {method} connection method for server {server.uuid} ({server.hostname})')
@@ -300,10 +312,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             if method == "hostname":
                 return server.hostname
             if method == "private_ipv4":
-                if self.get_option("network"):
-                    for iface in server_details.networking["interfaces"]["interface"]:
-                        if iface["network"] == self.network.uuid:
-                            return iface["ip_addresses"]["ip_address"][0].get("address")
+                if networks:
+                    for network in networks:
+                        for iface in server_details.networking["interfaces"]["interface"]:
+                            if iface["network"] == network:
+                                return iface["ip_addresses"]["ip_address"][0].get("address")
                 else:
                     raise AnsibleError("You can only connect with private IPv4 if you specify a network")
 
@@ -420,7 +433,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
 
 def _ensure_list(value) -> List:
-    if value is None:
+    if value is None or value == "":
         return []
 
     if isinstance(value, list):
@@ -441,3 +454,29 @@ def _parse_server_labels(labels: List):
         processed.append(f"{label['key']}={label['value']}")
 
     return processed
+
+
+def _match_by_labels(server, match_labels, operator):
+    for match_label in match_labels:
+        server_labels = _parse_server_labels(server.labels['label'])
+        match_found = False
+        for server_label in server_labels:
+            display.vvvv(f"Comparing wanted label {match_label} against labels {server_label} of server {server.hostname}")
+            if match_label in server_label:
+                match_found = True
+                if operator == "or":
+                    return True
+
+        if operator == "and" and not match_found:
+            return False
+
+    return operator == "and"
+
+
+def _match_by_networks(server_details, networks):
+    for network in networks:
+        for iface in server_details.networking["interfaces"]["interface"]:
+            if iface["type"] == network or iface["network"] == network:
+                return True
+
+    return False
