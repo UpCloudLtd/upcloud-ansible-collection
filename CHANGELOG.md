@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-10
+
 ### Added
 
 - Add `labels_operator` option to inventory plugin to select how matching with multiple labels is done. I.e., add option to select only servers that have all of the specified labels.
@@ -74,7 +76,8 @@ First release for the new UpCloud Ansible Collection! :tada:
 
 - Ansible inventory for UpCloud servers, allowing filtering with zones, tags, networks or server states.
 
-[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/UpCloudLtd/upcloud-ansible-collection/compare/v0.8.0...v0.8.1
