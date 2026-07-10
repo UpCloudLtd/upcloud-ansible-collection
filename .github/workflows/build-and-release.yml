@@ -7,7 +7,7 @@ on:
 env:
   NAMESPACE: upcloud
   COLLECTION_NAME: cloud
-  ANSIBLE_VERSION: stable-2.18
+  ANSIBLE_VERSION: stable-2.20
 
 jobs:
   units:
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.12
+          python-version: 3.13
 
       - name: Install ansible-base (${{env.ANSIBLE_VERSION}})
         run: pip install https://github.com/ansible/ansible/archive/${{env.ANSIBLE_VERSION}}.tar.gz --disable-pip-version-check
