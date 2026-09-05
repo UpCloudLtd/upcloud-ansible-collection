@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Inventory plugin returned no servers when `network` was not set. The empty string default was coerced to a list containing an empty string, which enabled the network filter with nothing to match.
+
 ## [0.11.0] - 2026-07-10
 
 ### Added
