@@ -101,7 +101,7 @@ DOCUMENTATION = r'''
             description: >
                 Populate inventory with servers that are attached to any of the given networks. Value can be network UUID, V("public"), or V("utility"). First
                 matching private network is used as C(ansible_host) when using O(connect_with=private_ipv4).
-            default: ""
+            default: []
             type: list
             elements: str
             required: false
