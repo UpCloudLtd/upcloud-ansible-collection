@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Inventory plugin sets server tags to `upcloud_tags` host variable.
+- Add `legacy_tags_variable` option to inventory plugin. Set it to `false` to stop setting the `tags` host variable, which causes a reserved name warning in Ansible.
+
+### Deprecated
+
+- `tags` host variable set by the inventory plugin. Use `upcloud_tags` instead. The `tags` variable and the `legacy_tags_variable` option will be removed in a future release.
 
 ## [0.11.1] - 2026-09-07
 
