@@ -335,6 +335,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             _new_attribute("state", to_native(server.state)), _new_attribute("zone", to_native(server.zone)),
             _new_attribute("firewall", to_native(server_details.firewall)),
             _new_attribute("plan", to_native(server.plan)), _new_attribute("tags", list(server_details.tags)),
+            _new_attribute("upcloud_tags", list(server_details.tags)),
             _new_attribute("metadata", to_native(server_details.metadata)),
             _new_attribute("labels", list(_parse_server_labels(server.labels["label"]))),
             _new_attribute("server_group", to_native(server_details.server_group))

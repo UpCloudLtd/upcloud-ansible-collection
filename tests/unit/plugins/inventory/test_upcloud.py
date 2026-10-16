@@ -432,6 +432,8 @@ def test_populate_hostvars(inventory, mocker):
     assert host1.vars['id'] == "00229adf-0e46-49b5-a8f7-cbd638d11f6a"
     assert host1.vars['state'] == "started"
     assert len(host1.vars['labels']) == 0
+    assert host1.vars['upcloud_tags'] == ['foo', 'bar']
+    assert host1.vars['tags'] == ['foo', 'bar']
     assert host2.vars['plan'] == "1xCPU-2GB"
     assert len(host2.vars['labels']) == 1
     assert host2.vars['labels'][0] == "foo=bar"
