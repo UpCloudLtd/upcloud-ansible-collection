@@ -105,7 +105,7 @@ DOCUMENTATION = r'''
             type: list
             elements: str
             required: false
-        legacy_tags_variable:
+        use_deprecated_tags:
             description: >
                 In addition to C(upcloud_tags), expose server tags in the C(tags) host variable. C(tags) is a reserved name in Ansible and using it
                 causes a warning on every run. Set to V(false) to only set C(upcloud_tags). This option will be removed in a future release.
@@ -149,7 +149,7 @@ keyed_groups:
 
 # Only set server tags to `upcloud_tags` host variable to avoid warning about reserved `tags` variable name
 plugin: upcloud.cloud.servers
-legacy_tags_variable: false
+use_deprecated_tags: false
 """
 
 import os
@@ -351,7 +351,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             _new_attribute("server_group", to_native(server_details.server_group))
         ]
 
-        if self.get_option("legacy_tags_variable") is not False:
+        if self.get_option("use_deprecated_tags") is not False:
             attributes.append(_new_attribute("tags", list(server_details.tags)))
 
         ipv4_addrs = []
@@ -443,6 +443,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         self._check_upcloud_api_installed()
         self._read_config_data(path)
+
+        if self.get_option("use_deprecated_tags"):
+            self.display.deprecated(
+                "The 'tags' host variable is deprecated. Use 'upcloud_tags' instead and set 'use_deprecated_tags' to false to silence this warning.",
+                version="v0.13.0",
+            )
+
         self._populate()
 
 

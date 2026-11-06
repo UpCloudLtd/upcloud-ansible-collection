@@ -439,20 +439,20 @@ def test_populate_hostvars(inventory, mocker):
     assert host2.vars['labels'][0] == "foo=bar"
 
 
-def get_without_legacy_tags_variable_option(option):
+def get_without_use_deprecated_tags_option(option):
     options = {
         'plugin': 'upcloud.cloud.servers',
         'connect_with': 'public_ipv4',
-        'legacy_tags_variable': False,
+        'use_deprecated_tags': False,
         'strict': False,
     }
     return options.get(option)
 
 
-def test_populate_hostvars_without_legacy_tags_variable(inventory, mocker):
+def test_populate_hostvars_without_use_deprecated_tags(inventory, mocker):
     inventory._fetch_servers = mocker.MagicMock(side_effect=get_servers)
     inventory._fetch_server_details = mocker.MagicMock(side_effect=get_server_details)
-    inventory.get_option = mocker.MagicMock(side_effect=get_without_legacy_tags_variable_option)
+    inventory.get_option = mocker.MagicMock(side_effect=get_without_use_deprecated_tags_option)
 
     inventory._initialize_upcloud_client = _mock_initialize_client
     inventory._test_upcloud_credentials = _mock_test_credentials
