@@ -105,6 +105,13 @@ DOCUMENTATION = r'''
             type: list
             elements: str
             required: false
+        use_deprecated_tags:
+            description: >
+                In addition to C(upcloud_tags), expose server tags in the C(tags) host variable. C(tags) is a reserved name in Ansible and using it
+                causes a warning on every run. Set to V(false) to only set C(upcloud_tags). This option will be removed in a future release.
+            default: true
+            type: bool
+            required: false
 '''
 
 EXAMPLES = r"""
@@ -139,6 +146,10 @@ keyed_groups:
     prefix: upcloud_zone
   - key: state
     prefix: server_state
+
+# Only set server tags to `upcloud_tags` host variable to avoid warning about reserved `tags` variable name
+plugin: upcloud.cloud.servers
+use_deprecated_tags: false
 """
 
 import os
@@ -334,11 +345,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             _new_attribute("hostname", to_native(server.hostname)),
             _new_attribute("state", to_native(server.state)), _new_attribute("zone", to_native(server.zone)),
             _new_attribute("firewall", to_native(server_details.firewall)),
-            _new_attribute("plan", to_native(server.plan)), _new_attribute("tags", list(server_details.tags)),
+            _new_attribute("plan", to_native(server.plan)), _new_attribute("upcloud_tags", list(server_details.tags)),
             _new_attribute("metadata", to_native(server_details.metadata)),
             _new_attribute("labels", list(_parse_server_labels(server.labels["label"]))),
             _new_attribute("server_group", to_native(server_details.server_group))
         ]
+
+        if self.get_option("use_deprecated_tags") is not False:
+            attributes.append(_new_attribute("tags", list(server_details.tags)))
 
         ipv4_addrs = []
         ipv6_addrs = []
@@ -429,6 +443,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         self._check_upcloud_api_installed()
         self._read_config_data(path)
+
+        if self.get_option("use_deprecated_tags"):
+            self.display.deprecated(
+                "The 'tags' host variable is deprecated. Use 'upcloud_tags' instead and set 'use_deprecated_tags' to false to silence this warning.",
+                version="v0.13.0",
+            )
+
         self._populate()
 
 

@@ -432,9 +432,37 @@ def test_populate_hostvars(inventory, mocker):
     assert host1.vars['id'] == "00229adf-0e46-49b5-a8f7-cbd638d11f6a"
     assert host1.vars['state'] == "started"
     assert len(host1.vars['labels']) == 0
+    assert host1.vars['upcloud_tags'] == ['foo', 'bar']
+    assert host1.vars['tags'] == ['foo', 'bar']
     assert host2.vars['plan'] == "1xCPU-2GB"
     assert len(host2.vars['labels']) == 1
     assert host2.vars['labels'][0] == "foo=bar"
+
+
+def get_without_use_deprecated_tags_option(option):
+    options = {
+        'plugin': 'upcloud.cloud.servers',
+        'connect_with': 'public_ipv4',
+        'use_deprecated_tags': False,
+        'strict': False,
+    }
+    return options.get(option)
+
+
+def test_populate_hostvars_without_use_deprecated_tags(inventory, mocker):
+    inventory._fetch_servers = mocker.MagicMock(side_effect=get_servers)
+    inventory._fetch_server_details = mocker.MagicMock(side_effect=get_server_details)
+    inventory.get_option = mocker.MagicMock(side_effect=get_without_use_deprecated_tags_option)
+
+    inventory._initialize_upcloud_client = _mock_initialize_client
+    inventory._test_upcloud_credentials = _mock_test_credentials
+
+    inventory._populate()
+
+    host1 = inventory.inventory.get_host('server1')
+
+    assert host1.vars['upcloud_tags'] == ['foo', 'bar']
+    assert 'tags' not in host1.vars
 
 
 def get_filtering_with_labels_or_options(option):
